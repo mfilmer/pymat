@@ -1,7 +1,46 @@
+from numbers import Number
 
-class Matrix(list):
+class Dim(list):
+    def __new__(cls,inDim):
+        # Make sure inDim is iterable
+        iter(inDim)
+
+        # If every item in inDim is a number create a Vec
+        if all(isinstance(item,Number) for item in inDim):
+            return Vec.__new__(cls,inDim)
+
+        # Make sure every item in inDim is iterable
+        try:
+            for item in inDim: iter(item)
+        except TypeError:
+            raise TypeError('All lists must be iterable')
+
+        # Make sure every item in inDim has the same length
+        # or that there are zero items in the list
+        if len(set(len(item) for item in inDim)) > 1:
+            raise ValueError('All lists must be the same length')
+        
+        # Actually create the Dim because it passed all the tests
+        return list.__new__(cls,inDim)
+
+    ##### Math Methods #####
+    def __add__(self,other):
+        pass
+    def __radd__(self,other):
+        pass
+
+    def __sub__(self,other):
+        pass
+    def __rsub__(self,other):
+        pass
+
+class Vec(Dim):
+    def __new__(cls,inDim):
+        return list.__new__(cls,inDim)
+
+class Matrix(Dim):
     def __init__(self,inMat):
-        inMat = map(Row,inMat)
+        inMat = map(Dim,inMat)
         super(Matrix,self).__init__(inMat)
 
     ##### Public Methods #####
@@ -111,14 +150,3 @@ class Matrix(list):
     def __abs__(self):
         pass
 
-class Row(list):
-    ##### Math Methods #####
-    def __add__(self,other):
-        pass
-    def __radd__(self,other):
-        pass
-
-    def __sub__(self,other):
-        pass
-    def __rsub__(self,other):
-        pass
