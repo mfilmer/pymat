@@ -7,7 +7,7 @@ class Dim(list):
 
         # If every item in inDim is a number create a Vec
         if all(isinstance(item,Number) for item in inDim):
-            return Vec.__new__(cls,inDim)
+            return Vec(inDim)
 
         # Make sure every item in inDim is iterable
         try:
@@ -23,6 +23,10 @@ class Dim(list):
         # Actually create the Dim because it passed all the tests
         return list.__new__(cls,inDim)
 
+    def __init__(self,inDim):
+        inDim = map(Dim,inDim)
+        super(Dim,self).__init__(inDim)
+
     ##### Math Methods #####
     def __add__(self,other):
         pass
@@ -37,6 +41,9 @@ class Dim(list):
 class Vec(Dim):
     def __new__(cls,inDim):
         return list.__new__(cls,inDim)
+
+    def __init__(self,inDim):
+        list.__init__(self,inDim)
 
 class Matrix(Dim):
     def __init__(self,inMat):
