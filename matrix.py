@@ -1,4 +1,5 @@
 from numbers import Number
+import itertools
 
 test2DMat = [[1,2,3],[4,5,6],[7,8,9]]
 test3DMat = [[[1,2,3],[4,5,6],[7,8,9]],[[2,3,4],[5,6,7],[8,9,0]],[[9,8,7],[6,5,4],[3,2,1]]]
@@ -68,19 +69,30 @@ class Matrix(Dim):
         super(Matrix,self).__init__(inMat)
 
     ##### Public Methods #####
+    #todo: improve this
+    def size(self,dim=0):
+        """Get the requested dimension of a matrix"""
+        pass
+
     def transpose(self):
-        return Matrix(zip(*self))
+        return Matrix(itertools.izip(*self))
 
     def inverse(self):
         pass
 
     def det(self):
         """Calculate the determinant of a matrix"""
+        # Make sure the matrix is square
         pass
 
-    def minor(self,key):
+    #todo: figure out what this actually is (because its not a minor)
+    def minor(self,(i,j)):
         """Return the requested minor of a matrix"""
-        pass
+        y = self[:]
+        del(y[i-1])
+        y = self.transpose()
+        del(y[j-1])
+        return zip(*y)
 
     def ref(self):
         """Return a row echelon form matrix"""
@@ -119,6 +131,16 @@ class Matrix(Dim):
         return True
 
     ##### Magic Methods #####
+    def __len__(self):
+        dims = []
+        while True:
+            try:
+                dims.append(len(self))
+            except:
+                break
+            self = self[0]
+        return dims
+
     def __getitem__(self,key):
         if isinstance(key,tuple):
             try:
