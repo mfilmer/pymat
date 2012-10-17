@@ -1,31 +1,37 @@
 from numbers import Number
 
+test2DMat = [[1,2,3],[4,5,6],[7,8,9]]
+test3DMat = [[[1,2,3],[4,5,6],[7,8,9]],[[2,3,4],[5,6,7],[8,9,0]],[[9,8,7],[6,5,4],[3,2,1]]]
+
 class Dim(list):
     def __new__(cls,inDim):
+        print 'new dim'
         # Make sure inDim is iterable
         iter(inDim)
 
         # If every item in inDim is a number create a Vec
         if all(isinstance(item,Number) for item in inDim):
-            return Vec(inDim)
+            #return Vec(inDim)
+            return Vec.__new__(cls,inDim)
 
         # Make sure every item in inDim is iterable
         try:
             for item in inDim: iter(item)
         except TypeError:
-            raise TypeError('All lists must be iterable')
+            raise TypeError('All items in a Dim must be iterable')
 
         # Make sure every item in inDim has the same length
         # or that there are zero items in the list
         if len(set(len(item) for item in inDim)) > 1:
-            raise ValueError('All lists must be the same length')
+            raise ValueError('All lists in a Dim must be the same length')
         
         # Actually create the Dim because it passed all the tests
         return list.__new__(cls,inDim)
 
     def __init__(self,inDim):
+        print 'init dim'
         inDim = map(Dim,inDim)
-        super(Dim,self).__init__(inDim)
+        list.__init__(self,inDim)
 
     ##### Math Methods #####
     def __add__(self,other):
@@ -40,14 +46,25 @@ class Dim(list):
 
 class Vec(Dim):
     def __new__(cls,inDim):
-        return list.__new__(cls,inDim)
+        print 'new Vec'
+        if cls.__name__ not in [Vec.__name__,Dim.__name__]:
+            newMat = list.__new__(Vec,inDim)
+            newMat.__init__(inDim)
+            return newMat
+        return list.__new__(Vec,inDim)
 
     def __init__(self,inDim):
+        print 'init vec',inDim
         list.__init__(self,inDim)
 
 class Matrix(Dim):
+    def __new__(cls,inMat):
+        print 'new matrix'
+        return Dim.__new__(cls,inMat)
+
     def __init__(self,inMat):
-        inMat = map(Dim,inMat)
+        print 'init matrix'
+        #inMat = map(Dim,inMat)
         super(Matrix,self).__init__(inMat)
 
     ##### Public Methods #####
