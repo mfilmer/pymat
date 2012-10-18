@@ -1,5 +1,5 @@
 from numbers import Number
-import itertools
+import itertools as IT
 
 test2DMat = [[1,2,3],[4,5,6],[7,8,9]]
 test3DMat = [[[1,2,3],[4,5,6],[7,8,9]],[[2,3,4],[5,6,7],[8,9,0]],[[9,8,7],[6,5,4],[3,2,1]]]
@@ -31,16 +31,31 @@ class Dim(list):
             try:
                 for item in inDim: iter(item)
             except TypeError:
-                raise TypeError('All items in a Dim must be iterable')
+                raise TypeError('Each element in a {0} must be iterable'
+                        .format(type(self).__name__))
 
             # Make sure every item in inDim has the same length
             # or that there are zero items in the list
             if len(set(len(item) for item in inDim)) > 1:
-                raise ValueError('All lists in a Dim must be the same length')
+                raise ValueError('Each element in a {0} must be the same '
+                        'length'.format(type(self).__name__))
 
             inDim = map(Dim,inDim)
             list.__init__(self,inDim)
 
+    ##### Magic Methods #####
+    def __getitem__(self,key):
+        if isinstance(key,tuple):
+            if len(key) == 1:
+                key = key[0]
+            else:
+                print map(type,self)
+                return type(self)(IT.imap(lambda x: x[key[1:]],self[key[0]]))
+        if isinstance(key,(int,slice)):
+            return type(self)(super(Dim,self).__getitem__(key))
+        else:
+            raise TypeError('{0} indicies cannot be of type: {1}'
+                    .format(type(self).__name__,type(key).__name__))
 
     ##### Math Methods #####
     def __add__(self,other):
@@ -74,6 +89,13 @@ class Vec(Dim):
         elif dim < 0:
             raise ValueError('paramater to size() cannot be negative')
         return len(self)
+
+
+    ##### Magic Methods #####
+    def __getitem__(self,key):
+        if isinstance(key,tuple) and len(key) == 1:
+            key = key[0]
+        return list.__getitem__(self,key)
 
 
 class Matrix(Dim):
@@ -113,11 +135,12 @@ class Matrix(Dim):
             raise ValueError('parameter to size() cannot be negative')
 
     def transpose(self):
-        return Matrix(itertools.izip(*self))
+        return Matrix(IT.izip(*self))
 
     def inverse(self):
         pass
 
+    #todo: finish
     def det(self):
         """Calculate the determinant of a matrix"""
         # Make sure the matrix is square
@@ -171,19 +194,37 @@ class Matrix(Dim):
 
 
     ##### Magic Methods #####
-    def __getitem__(self,key):
-        if isinstance(key,tuple):
-            try:
-                i,j = key
-            except ValueError:
-                raise KeyError
-            if not isinstance(i,(slice,int)) or not isinstance(j,(slice,int)):
-                raise KeyError
-            return Matrix(super(Matrix,self).__getitem__(key))
-        elif isinstance(key,(slice,int)):
-            return Matrix(super(Matrix,self).__getitem__(key))
-        else:
-            raise KeyError
+    #todo: remove this
+    def __getslice__(self,key):
+        raise Exception('this called __getslice__ fix that')
+
+    #todo: improve this
+    # def __getitem__(self,key):
+        # if isinstance(key,tuple):
+            # if len(key) == 1:
+                # key = key[0]
+            # else:
+                # print map(type,self)
+                # return Matrix(IT.imap(lambda x: x[key[1:]],self[key[0]]))
+        # if isinstance(key,(int,slice)):
+            # return Matrix(super(Matrix,self).__getitem__(key))
+        # else:
+            # raise TypeError('{0} indicies cannot be of type: {1}'
+                    # .format(type(self).__name__,type(key).__name__))
+
+        # Old Version
+        # if isinstance(key,tuple):
+            # try:
+                # i,j = key
+            # except ValueError:
+                # raise KeyError
+            # if not isinstance(i,(slice,int)) or not isinstance(j,(slice,int)):
+                # raise KeyError
+            # return Matrix(super(Matrix,self).__getitem__(key))
+        # elif isinstance(key,(slice,int)):
+            # return Matrix(super(Matrix,self).__getitem__(key))
+        # else:
+            # raise KeyError
 
     def __str__(self):
         return super(Matrix,self).__str__()
