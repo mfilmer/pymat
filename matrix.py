@@ -70,9 +70,23 @@ class Matrix(Dim):
 
     ##### Public Methods #####
     #todo: improve this
-    def size(self,dim=0):
+    def size(self,dim=None):
         """Get the requested dimension of a matrix"""
-        pass
+        if dim is None:
+            dims = []
+            while True:
+                try:
+                    dims.append(len(self))
+                except TypeError:
+                    break
+                self = self[0]
+            return tuple(dims)
+        elif dim > 0:
+            return self[0].size(dim-1)
+        elif dim == 0:
+            return len(self)
+        else:
+            raise ValueError
 
     def transpose(self):
         return Matrix(itertools.izip(*self))
@@ -131,16 +145,6 @@ class Matrix(Dim):
         return True
 
     ##### Magic Methods #####
-    def __len__(self):
-        dims = []
-        while True:
-            try:
-                dims.append(len(self))
-            except:
-                break
-            self = self[0]
-        return dims
-
     def __getitem__(self,key):
         if isinstance(key,tuple):
             try:
