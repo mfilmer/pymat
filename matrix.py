@@ -46,16 +46,9 @@ class Dim(list):
     ##### Magic Methods #####
     def __getitem__(self,key):
         if isinstance(key,tuple):
-            if len(key) == 1:
-                key = key[0]
-            else:
-                print map(type,self)
-                return type(self)(IT.imap(lambda x: x[key[1:]],self[key[0]]))
-        if isinstance(key,(int,slice)):
-            return type(self)(super(Dim,self).__getitem__(key))
-        else:
-            raise TypeError('{0} indicies cannot be of type: {1}'
-                    .format(type(self).__name__,type(key).__name__))
+            key = key[0]
+        return super(Dim,self).__getitem__(key)
+
 
     ##### Math Methods #####
     def __add__(self,other):
@@ -73,7 +66,6 @@ class Vec(Dim):
     def __new__(cls,inDim):
         if DEBUG: print 'new Vec'
         if isinstance(cls,Dim):
-        #if cls.__name__ not in [Vec.__name__,Dim.__name__,Matrix.__name__]:
             newVec = list.__new__(Vec,inDim)
             newVec.__init__(inDim)
             return newVec
@@ -91,18 +83,14 @@ class Vec(Dim):
         return len(self)
 
 
-    ##### Magic Methods #####
-    def __getitem__(self,key):
-        if isinstance(key,tuple) and len(key) == 1:
-            key = key[0]
-        return list.__getitem__(self,key)
-
-
 class Matrix(Dim):
     def __new__(cls,inMat):
         if DEBUG: print 'new matrix'
         if not isinstance(inMat,(list,tuple)):
-            inMat = tuple(inMat)
+            try:
+                inMat = tuple(inMat)
+            except TypeError:
+                return inMat
         newMat = Dim.__new__(cls,inMat)
         setattr(newMat,'uninitialized',None)
         newMat.__init__(inMat)
@@ -199,32 +187,24 @@ class Matrix(Dim):
         raise Exception('this called __getslice__ fix that')
 
     #todo: improve this
-    # def __getitem__(self,key):
-        # if isinstance(key,tuple):
-            # if len(key) == 1:
-                # key = key[0]
-            # else:
-                # print map(type,self)
-                # return Matrix(IT.imap(lambda x: x[key[1:]],self[key[0]]))
-        # if isinstance(key,(int,slice)):
-            # return Matrix(super(Matrix,self).__getitem__(key))
-        # else:
-            # raise TypeError('{0} indicies cannot be of type: {1}'
-                    # .format(type(self).__name__,type(key).__name__))
-
-        # Old Version
-        # if isinstance(key,tuple):
-            # try:
-                # i,j = key
-            # except ValueError:
-                # raise KeyError
-            # if not isinstance(i,(slice,int)) or not isinstance(j,(slice,int)):
-                # raise KeyError
-            # return Matrix(super(Matrix,self).__getitem__(key))
-        # elif isinstance(key,(slice,int)):
-            # return Matrix(super(Matrix,self).__getitem__(key))
-        # else:
-            # raise KeyError
+    def __getitem__(self,key):
+        if isinstance(key,tuple):
+            if len(key) == 1:
+                key = key[0]
+            else:
+                if isinstance(key[0],int):
+                    return Matrix(self[0][key[1:]])
+                elif isinstance(key[0],slice):
+                    return Matrix(x[key[1:]] for x in self[key[0]])
+                    #return Matrix(IT.imap(lambda x: x[key[1:]],self[key[0]]))
+                else:
+                    raise TypeError
+                #return type(self)(IT.imap(lambda x: x[key[1:]],self[key[0]]))
+        if isinstance(key,(int,slice)):
+            return Matrix(super(Matrix,self).__getitem__(key))
+        else:
+            raise TypeError('{0} indicies cannot be of type: {1}'
+                    .format(type(self).__name__,type(key).__name__))
 
     def __str__(self):
         return super(Matrix,self).__str__()
