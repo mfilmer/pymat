@@ -3,10 +3,13 @@ import itertools
 
 test2DMat = [[1,2,3],[4,5,6],[7,8,9]]
 test3DMat = [[[1,2,3],[4,5,6],[7,8,9]],[[2,3,4],[5,6,7],[8,9,0]],[[9,8,7],[6,5,4],[3,2,1]]]
+test3DLop = [[[1],[4]],[[2],[5]],[[9],[6]]]
+DEBUG = False
 
 class Dim(list):
     def __new__(cls,inDim):
-        print 'new dim'
+        if DEBUG: print 'new dim'
+        inDim = list(inDim)
 
         # If every item in inDim is a number create a Vec
         if all(isinstance(item,Number) for item in inDim):
@@ -14,24 +17,30 @@ class Dim(list):
             return Vec.__new__(cls,inDim)
 
         # Otherwise create a Dim
-        return list.__new__(cls,inDim)
+        newDim = list.__new__(cls,inDim)
+        setattr(newDim,'UI',None)
+        newDim.__init__(inDim)
+        return newDim
 
     def __init__(self,inDim):
-        print 'init dim'
+        if hasattr(self,'UI'):
+            delattr(self,'UI')
+            if DEBUG: print 'init dim'
 
-        # Make sure every item in inDim is iterable
-        try:
-            for item in inDim: iter(item)
-        except TypeError:
-            raise TypeError('All items in a Dim must be iterable')
+            # Make sure every item in inDim is iterable
+            try:
+                for item in inDim: iter(item)
+            except TypeError:
+                raise TypeError('All items in a Dim must be iterable')
 
-        # Make sure every item in inDim has the same length
-        # or that there are zero items in the list
-        if len(set(len(item) for item in inDim)) > 1:
-            raise ValueError('All lists in a Dim must be the same length')
+            # Make sure every item in inDim has the same length
+            # or that there are zero items in the list
+            if len(set(len(item) for item in inDim)) > 1:
+                raise ValueError('All lists in a Dim must be the same length')
 
-        inDim = map(Dim,inDim)
-        list.__init__(self,inDim)
+            inDim = map(Dim,inDim)
+            list.__init__(self,inDim)
+
 
     ##### Math Methods #####
     def __add__(self,other):
@@ -47,29 +56,44 @@ class Dim(list):
 
 class Vec(Dim):
     def __new__(cls,inDim):
-        print 'new Vec'
-        if cls.__name__ not in [Vec.__name__,Dim.__name__]:
-            newMat = list.__new__(Vec,inDim)
-            newMat.__init__(inDim)
-            return newMat
+        if DEBUG: print 'new Vec'
+        if isinstance(cls,Dim):
+        #if cls.__name__ not in [Vec.__name__,Dim.__name__,Matrix.__name__]:
+            newVec = list.__new__(Vec,inDim)
+            newVec.__init__(inDim)
+            return newVec
         return list.__new__(Vec,inDim)
 
     def __init__(self,inDim):
-        print 'init vec',inDim
+        if DEBUG: print 'init vec',inDim
         list.__init__(self,inDim)
+
+    def size(self,dim=0):
+        if dim > 0:
+            return 1
+        elif dim < 0:
+            raise ValueError('paramater to size() cannot be negative')
+        return len(self)
 
 
 class Matrix(Dim):
     def __new__(cls,inMat):
-        print 'new matrix'
-        return Dim.__new__(cls,inMat)
+        if DEBUG: print 'new matrix'
+        if not isinstance(inMat,(list,tuple)):
+            inMat = tuple(inMat)
+        newMat = Dim.__new__(cls,inMat)
+        setattr(newMat,'uninitialized',None)
+        newMat.__init__(inMat)
+        return newMat
 
     def __init__(self,inMat):
-        print 'init matrix'
-        super(Matrix,self).__init__(inMat)
+        if hasattr(self,'uninitialized'):
+            delattr(self,'uninitialized')
+            if DEBUG: print 'init matrix'
+            super(Matrix,self).__init__(inMat)
+
 
     ##### Public Methods #####
-    #todo: improve this
     def size(self,dim=None):
         """Get the requested dimension of a matrix"""
         if dim is None:
@@ -86,7 +110,7 @@ class Matrix(Dim):
         elif dim == 0:
             return len(self)
         else:
-            raise ValueError
+            raise ValueError('parameter to size() cannot be negative')
 
     def transpose(self):
         return Matrix(itertools.izip(*self))
@@ -145,6 +169,7 @@ class Matrix(Dim):
                 m[y][x] /= c
         return True
 
+
     ##### Magic Methods #####
     def __getitem__(self,key):
         if isinstance(key,tuple):
@@ -168,6 +193,7 @@ class Matrix(Dim):
 
     def __nonzero__(self):
         return super(Matrix,self).__nonzero__()
+
 
     ##### Math Methods #####
     def __add__(self,other):
