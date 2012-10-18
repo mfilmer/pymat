@@ -65,7 +65,6 @@ class Matrix(Dim):
 
     def __init__(self,inMat):
         print 'init matrix'
-        #inMat = map(Dim,inMat)
         super(Matrix,self).__init__(inMat)
 
     ##### Public Methods #####
@@ -97,7 +96,8 @@ class Matrix(Dim):
     def det(self):
         """Calculate the determinant of a matrix"""
         # Make sure the matrix is square
-        pass
+        if self.size(0) != self.size(1):
+            raise TypeError('Determinant only defined on square matrices')
 
     #todo: figure out what this actually is (because its not a minor)
     def minor(self,(i,j)):
@@ -153,9 +153,9 @@ class Matrix(Dim):
                 raise KeyError
             if not isinstance(i,(slice,int)) or not isinstance(j,(slice,int)):
                 raise KeyError
-            return super(Matrix,self).__getitem__(key)
+            return Matrix(super(Matrix,self).__getitem__(key))
         elif isinstance(key,(slice,int)):
-            return super(Matrix,self).__getitem__(key)
+            return Matrix(super(Matrix,self).__getitem__(key))
         else:
             raise KeyError
 
