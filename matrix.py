@@ -24,7 +24,7 @@ test3DLop = [[[1],
 
              [[9],
               [6]]]
-DEBUG = False
+DEBUG = True
 
 class Dim(list):
     def __new__(cls, inDim):
@@ -64,10 +64,13 @@ class Dim(list):
             list.__init__(self, inDim)
 
     ##### Magic Methods #####
+    def __getslice__(self, i, j):
+        return self.__getitem__(self, slice(i, j))
+
     def __getitem__(self, key):
         if isinstance(key, tuple):
             key = key[0]
-        return super(Dim, self).__getitem__(key)
+        return list.__getitem__(self,key)
 
 
     ##### Math Methods #####
@@ -85,10 +88,6 @@ class Dim(list):
 class Vec(Dim):
     def __new__(cls, inDim):
         if DEBUG: print 'new Vec'
-        if isinstance(cls, Dim):
-            newVec = list.__new__(Vec, inDim)
-            newVec.__init__(inDim)
-            return newVec
         return list.__new__(Vec, inDim)
 
     def __init__(self, inDim):
@@ -120,7 +119,7 @@ class Matrix(Dim):
         if hasattr(self, 'uninitialized'):
             delattr(self, 'uninitialized')
             if DEBUG: print 'init matrix'
-            super(Matrix, self).__init__(inMat)
+            Dim.__init__(self,inMat)
 
 
     ##### Public Methods #####
@@ -203,8 +202,8 @@ class Matrix(Dim):
 
     ##### Magic Methods #####
     #todo: remove this
-    def __getslice__(self, key):
-        raise Exception('this called __getslice__ fix that')
+    def __getslice__(self, i, j):
+        return self.__getitem__(slice(i, j))
 
     #todo: improve this
     def __getitem__(self, key):
@@ -221,19 +220,19 @@ class Matrix(Dim):
                     raise TypeError
                 #return type(self)(IT.imap(lambda x: x[key[1:]], self[key[0]]))
         if isinstance(key, (int, slice)):
-            return Matrix(super(Matrix, self).__getitem__(key))
+            return Matrix(Dim.__getitem__(self,key))
         else:
             raise TypeError('{0} indicies cannot be of type: {1}'
                     .format(type(self).__name__, type(key).__name__))
 
     def __str__(self):
-        return super(Matrix, self).__str__()
+        return Dim.__str__(self)
 
     def __repr__(self):
-        return super(Matrix, self).__repr__()
+        return Dim.__repr__(self)
 
     def __nonzero__(self):
-        return super(Matrix, self).__nonzero__()
+        return Dim.__nonzero__(self)
 
 
     ##### Math Methods #####
