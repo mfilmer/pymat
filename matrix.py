@@ -266,4 +266,3 @@ class Matrix(Dim):
 
     def __abs__(self):
         pass
-
